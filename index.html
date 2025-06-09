@@ -336,15 +336,15 @@
     </div>
     <div id="historyModal" class="modal">
         <div class="modal-content">
-            <h2>Lịch Sử Các Ván</h2>
+            <h2>Lịch Sử Các Trận</h2>
             <table id="historyModalTable">
                 <thead>
                     <tr>
-                        <th>Ván</th>
-                        <th id="modalName1">Người chơi 1</th>
-                        <th id="modalName2">Người chơi 2</th>
-                        <th id="modalName3">Người chơi 3</th>
-                        <th id="modalName4">Người chơi 4</th>
+                        <th>Trận</th>
+                        <th>Người chơi 1</th>
+                        <th>Người chơi 2</th>
+                        <th>Người chơi 3</th>
+                        <th>Người chơi 4</th>
                     </tr>
                 </thead>
                 <tbody id="historyModalBody"></tbody>
@@ -356,6 +356,8 @@
         let players = ['', '', '', ''];
         let totals = [0, 0, 0, 0];
         let history = [];
+        let matchHistory = [];
+        let matchId = 1;
 
         // Load data from localStorage when page loads
         function loadData() {
@@ -365,11 +367,12 @@
                 players = data.players || ['', '', '', ''];
                 totals = data.totals || [0, 0, 0, 0];
                 history = data.history || [];
+                matchHistory = data.matchHistory || [];
+                matchId = data.matchId || 1;
                 for (let i = 0; i < 4; i++) {
                     document.getElementById(`player${i + 1}`).value = players[i];
                     document.getElementById(`name${i + 1}`).textContent = players[i] || `Người chơi ${i + 1}`;
                     document.getElementById(`score${i + 1}`).placeholder = `Điểm ${players[i] || `người chơi ${i + 1}`}`;
-                    document.getElementById(`modalName${i + 1}`).textContent = players[i] || `Người chơi ${i + 1}`;
                     const totalEl = document.getElementById(`total${i + 1}`);
                     totalEl.textContent = totals[i];
                     totalEl.className = 'total-score ' + (totals[i] > 0 ? 'positive' : totals[i] < 0 ? 'negative' : '');
@@ -381,20 +384,31 @@
 
         // Save data to localStorage
         function saveData() {
-            const data = { players, totals, history };
+            const data = { players, totals, history, matchHistory, matchId };
             localStorage.setItem('gameData', JSON.stringify(data));
         }
 
         // Reset game to initial state
         function resetGame() {
-            localStorage.removeItem('gameData');
+            // Save current match result to matchHistory if at least one round was played
+            if (history.length > 0) {
+                matchHistory.push({
+                    matchId: matchId++,
+                    players: [...players],
+                    totals: [...totals]
+                });
+                // Keep only the last 5 matches
+                if (matchHistory.length > 5) {
+                    matchHistory.shift();
+                }
+            }
+            // Reset current game
             players = ['', '', '', ''];
             totals = [0, 0, 0, 0];
             history = [];
             for (let i = 0; i < 4; i++) {
                 document.getElementById(`player${i + 1}`).value = '';
                 document.getElementById(`name${i + 1}`).textContent = `Người chơi ${i + 1}`;
-                document.getElementById(`modalName${i + 1}`).textContent = `Người chơi ${i + 1}`;
                 document.getElementById(`score${i + 1}`).placeholder = `Điểm người chơi ${i + 1}`;
                 const totalEl = document.getElementById(`total${i + 1}`);
                 totalEl.textContent = '0';
@@ -403,6 +417,7 @@
             }
             updateHistory();
             clearScoreInputs();
+            saveData();
             closeResetConfirm();
         }
 
@@ -423,7 +438,6 @@
             }
             players[index - 1] = name;
             document.getElementById(`name${index}`).textContent = name || `Người chơi ${index}`;
-            document.getElementById(`modalName${index}`).textContent = name || `Người chơi ${index}`;
             document.getElementById(`score${index}`).placeholder = `Điểm ${name || `người chơi ${index}`}`;
             saveData();
         }
@@ -472,10 +486,12 @@
         function showHistory() {
             const modalBody = document.getElementById('historyModalBody');
             modalBody.innerHTML = '';
-            history.forEach((scores, index) => {
+            matchHistory.forEach(match => {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td>${index + 1}</td>` + 
-                    scores.map(score => `<td class="${score > 0 ? 'positive' : score < 0 ? 'negative' : ''}">${score}</td>`).join('');
+                row.innerHTML = `<td>${match.matchId}</td>` + 
+                    match.totals.map((score, index) => 
+                        `<td class="${score > 0 ? 'positive' : score < 0 ? 'negative' : ''}">${score} (${match.players[index] || `Người chơi ${index + 1}`})</td>`
+                    ).join('');
                 modalBody.appendChild(row);
             });
             document.getElementById('historyModal').style.display = 'flex';
