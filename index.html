@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tái Tạo Năng Lượng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #222;
+            color: #ddd;
+            transition: background-color 0.3s, color 0.3s;
+            overscroll-behavior: none;
+        }
+        body.light-mode {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .container {
+            max-width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .header h1 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+        .header-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .toggle-mode, .history-btn, .reset-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            font-size: 0.8em;
+            border-radius: 5px;
+            cursor: pointer;
+            width: fit-content;
+        }
+        .toggle-mode:hover, .history-btn:hover {
+            background: #0056b3;
+        }
+        .reset-btn {
+            background: #dc3545;
+        }
+        .reset-btn:hover {
+            background: #c82333;
+        }
+        .player-inputs {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(140px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .player-card {
+            background: #333;
+            padding: 8px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(255,255,255,0.1);
+        }
+        body.light-mode .player-card {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .avatar-score {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.8em;
+            line-height: 50px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .avatar.sad {
+            background: #dc3545;
+            content: "😢";
+        }
+        .avatar.normal {
+            background: #ccc;
+            content: "😐";
+        }
+        .avatar.happy {
+            background: #28a745;
+            content: "😊";
+        }
+        .total-score {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        .positive {
+            color: #28a745;
+        }
+        .negative {
+            color: #dc3545;
+        }
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            margin: 5px 0;
+            border: 1px solid #555;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1.2em;
+            text-align: center;
+            background-color: #2a2a2a;
+            color: #ddd;
+        }
+        body.light-mode input {
+            background: white;
+            border-color: #ccc;
+            color: #333;
+        }
+        .score-inputs {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(140px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        button {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            max-width: 200px;
+            font-size: 0.9em;
+        }
+        button:hover {
+            background: #218838;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid #555;
+            padding: 6px;
+            text-align: center;
+        }
+        body.light-mode th, body.light-mode td {
+            border-color: #ddd;
+        }
+        th {
+            background: #0056b3;
+            color: white;
+            font-size: 0.8em;
+        }
+        body.light-mode th {
+            background: #007bff;
+        }
+        td {
+            font-size: 0.8em;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-content {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            max-width: 80%;
+        }
+        body.light-mode .modal-content {
+            background: white;
+            color: #333;
+        }
+        .modal-content button {
+            margin-top: 10px;
+            margin-left: 5px;
+            margin-right: 5px;
+        }
+        @media (max-width: 600px) {
+            .player-inputs, .score-inputs {
+                grid-template-columns: repeat(2, minmax(120px, 1fr));
+                gap: 6px;
+            }
+            .header h1 {
+                font-size: 1.2em;
+            }
+            .header-buttons {
+                flex-wrap: wrap;
+                gap: 6px;
+            }
+            .toggle-mode, .history-btn, .reset-btn {
+                padding: 4px 6px;
+                font-size: 0.7em;
+            }
+            .avatar {
+                width: 40px;
+                height: 40px;
+                line-height: 40px;
+                font-size: 1.5em;
+            }
+            .total-score {
+                font-size: 1em;
+            }
+            .player-card {
+                padding: 6px;
+            }
+            input[type="text"], input[type="number"] {
+                font-size: 1.1em;
+                padding: 10px;
+            }
+            button {
+                padding: 6px;
+                font-size: 0.8em;
+            }
+            th, td {
+                padding: 4px;
+                font-size: 0.7em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Tái Tạo Năng Lượng</h1>
+            <div class="header-buttons">
+                <button class="toggle-mode" onclick="toggleDarkMode()">Light Mode</button>
+                <button class="history-btn" onclick="showHistory()">Lịch Sử</button>
+                <button class="reset-btn" onclick="showResetConfirm()">Chơi Lại</button>
+            </div>
+        </div>
+        <div class="player-inputs">
+            <div class="player-card">
+                <div class="avatar-score">
+                    <div id="avatar1" class="avatar normal">😐</div>
+                    <div id="total1" class="total-score">0</div>
+                </div>
+                <input type="text" id="player1" placeholder="Tên người chơi 1" onchange="updateName(1)">
+            </div>
+            <div class="player-card">
+                <div class="avatar-score">
+                    <div id="avatar2" class="avatar normal">😐</div>
+                    <div id="total2" class="total-score">0</div>
+                </div>
+                <input type="text" id="player2" placeholder="Tên người chơi 2" onchange="updateName(2)">
+            </div>
+            <div class="player-card">
+                <div class="avatar-score">
+                    <div id="avatar3" class="avatar normal">😐</div>
+                    <div id="total3" class="total-score">0</div>
+                </div>
+                <input type="text" id="player3" placeholder="Tên người chơi 3" onchange="updateName(3)">
+            </div>
+            <div class="player-card">
+                <div class="avatar-score">
+                    <div id="avatar4" class="avatar normal">😐</div>
+                    <div id="total4" class="total-score">0</div>
+                </div>
+                <input type="text" id="player4" placeholder="Tên người chơi 4" onchange="updateName(4)">
+            </div>
+        </div>
+        <div class="score-inputs">
+            <div>
+                <input type="number" id="score1" placeholder="Điểm người chơi 1">
+            </div>
+            <div>
+                <input type="number" id="score2" placeholder="Điểm người chơi 2">
+            </div>
+            <div>
+                <input type="number" id="score3" placeholder="Điểm người chơi 3">
+            </div>
+            <div>
+                <input type="number" id="score4" placeholder="Điểm người chơi 4">
+            </div>
+        </div>
+        <div class="button-group">
+            <button onclick="addScores()">Thêm Ván</button>
+        </div>
+        <table id="history">
+            <thead>
+                <tr>
+                    <th>Ván</th>
+                    <th id="name1">Người chơi 1</th>
+                    <th id="name2">Người chơi 2</th>
+                    <th id="name3">Người chơi 3</th>
+                    <th id="name4">Người chơi 4</th>
+                </tr>
+            </thead>
+            <tbody id="history-body"></tbody>
+        </table>
+    </div>
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <p>Tổng điểm của ván phải bằng 0!</p>
+            <button onclick="closeModal()">Đóng</button>
+        </div>
+    </div>
+    <div id="resetConfirmModal" class="modal">
+        <div class="modal-content">
+            <p>Bạn có chắc chắn muốn chơi lại? Dữ liệu hiện tại sẽ bị xóa!</p>
+            <button onclick="resetGame()">Xác Nhận</button>
+            <button onclick="closeResetConfirm()">Hủy</button>
+        </div>
+    </div>
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <h2>Lịch Sử Các Ván</h2>
+            <table id="historyModalTable">
+                <thead>
+                    <tr>
+                        <th>Ván</th>
+                        <th id="modalName1">Người chơi 1</th>
+                        <th id="modalName2">Người chơi 2</th>
+                        <th id="modalName3">Người chơi 3</th>
+                        <th id="modalName4">Người chơi 4</th>
+                    </tr>
+                </thead>
+                <tbody id="historyModalBody"></tbody>
+            </table>
+            <button onclick="closeHistory()">Đóng</button>
+        </div>
+    </div>
+    <script>
+        let players = ['', '', '', ''];
+        let totals = [0, 0, 0, 0];
+        let history = [];
+
+        // Load data from localStorage when page loads
+        function loadData() {
+            const savedData = localStorage.getItem('gameData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                players = data.players || ['', '', '', ''];
+                totals = data.totals || [0, 0, 0, 0];
+                history = data.history || [];
+                for (let i = 0; i < 4; i++) {
+                    document.getElementById(`player${i + 1}`).value = players[i];
+                    document.getElementById(`name${i + 1}`).textContent = players[i] || `Người chơi ${i + 1}`;
+                    document.getElementById(`score${i + 1}`).placeholder = `Điểm ${players[i] || `người chơi ${i + 1}`}`;
+                    document.getElementById(`modalName${i + 1}`).textContent = players[i] || `Người chơi ${i + 1}`;
+                    const totalEl = document.getElementById(`total${i + 1}`);
+                    totalEl.textContent = totals[i];
+                    totalEl.className = 'total-score ' + (totals[i] > 0 ? 'positive' : totals[i] < 0 ? 'negative' : '');
+                    updateAvatar(i + 1);
+                }
+                updateHistory();
+            }
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            const data = { players, totals, history };
+            localStorage.setItem('gameData', JSON.stringify(data));
+        }
+
+        // Reset game to initial state
+        function resetGame() {
+            localStorage.removeItem('gameData');
+            players = ['', '', '', ''];
+            totals = [0, 0, 0, 0];
+            history = [];
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`player${i + 1}`).value = '';
+                document.getElementById(`name${i + 1}`).textContent = `Người chơi ${i + 1}`;
+                document.getElementById(`modalName${i + 1}`).textContent = `Người chơi ${i + 1}`;
+                document.getElementById(`score${i + 1}`).placeholder = `Điểm người chơi ${i + 1}`;
+                const totalEl = document.getElementById(`total${i + 1}`);
+                totalEl.textContent = '0';
+                totalEl.className = 'total-score';
+                updateAvatar(i + 1);
+            }
+            updateHistory();
+            clearScoreInputs();
+            closeResetConfirm();
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle('light-mode');
+            document.querySelector('.toggle-mode').textContent = 
+                document.body.classList.contains('light-mode') ? 'Dark Mode' : 'Light Mode';
+        }
+
+        function updateName(index) {
+            const input = document.getElementById(`player${index}`);
+            const name = input.value.trim();
+            const otherNames = players.filter((n, i) => i !== index - 1 && n !== '');
+            if (name && otherNames.includes(name)) {
+                alert('Tên người chơi đã tồn tại!');
+                input.value = players[index - 1];
+                return;
+            }
+            players[index - 1] = name;
+            document.getElementById(`name${index}`).textContent = name || `Người chơi ${index}`;
+            document.getElementById(`modalName${index}`).textContent = name || `Người chơi ${index}`;
+            document.getElementById(`score${index}`).placeholder = `Điểm ${name || `người chơi ${index}`}`;
+            saveData();
+        }
+
+        function updateAvatar(index) {
+            const score = totals[index - 1];
+            const avatarEl = document.getElementById(`avatar${index}`);
+            avatarEl.className = 'avatar';
+            avatarEl.textContent = score < 0 ? '😢' : score > 0 ? '😊' : '😐';
+            avatarEl.className += score < 0 ? ' sad' : score > 0 ? ' happy' : ' normal';
+        }
+
+        function addScores() {
+            const scores = [
+                parseInt(document.getElementById('score1').value) || 0,
+                parseInt(document.getElementById('score2').value) || 0,
+                parseInt(document.getElementById('score3').value) || 0,
+                parseInt(document.getElementById('score4').value) || 0
+            ];
+            const sum = scores.reduce((a, b) => a + b, 0);
+            if (sum !== 0) {
+                document.getElementById('errorModal').style.display = 'flex';
+                return;
+            }
+            history.push(scores);
+            for (let i = 0; i < 4; i++) {
+                totals[i] += scores[i];
+                const totalEl = document.getElementById(`total${i + 1}`);
+                totalEl.textContent = totals[i];
+                totalEl.className = 'total-score ' + (totals[i] > 0 ? 'positive' : totals[i] < 0 ? 'negative' : '');
+                updateAvatar(i + 1);
+            }
+            updateHistory();
+            clearScoreInputs();
+            saveData();
+        }
+
+        function showResetConfirm() {
+            document.getElementById('resetConfirmModal').style.display = 'flex';
+        }
+
+        function closeResetConfirm() {
+            document.getElementById('resetConfirmModal').style.display = 'none';
+        }
+
+        function showHistory() {
+            const modalBody = document.getElementById('historyModalBody');
+            modalBody.innerHTML = '';
+            history.forEach((scores, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${index + 1}</td>` + 
+                    scores.map(score => `<td class="${score > 0 ? 'positive' : score < 0 ? 'negative' : ''}">${score}</td>`).join('');
+                modalBody.appendChild(row);
+            });
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
+        function closeHistory() {
+            document.getElementById('historyModal').style.display = 'none';
+        }
+
+        function closeModal() {
+            document.getElementById('errorModal').style.display = 'none';
+        }
+
+        function clearScoreInputs() {
+            document.getElementById('score1').value = '';
+            document.getElementById('score2').value = '';
+            document.getElementById('score3').value = '';
+            document.getElementById('score4').value = '';
+        }
+
+        function updateHistory() {
+            const tbody = document.getElementById('history-body');
+            tbody.innerHTML = '';
+            history.forEach((scores, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td>${index + 1}</td>` + 
+                    scores.map(score => `<td class="${score > 0 ? 'positive' : score < 0 ? 'negative' : ''}">${score}</td>`).join('');
+                tbody.appendChild(row);
+            });
+        }
+
+        // Load data when page is loaded
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+</html>
