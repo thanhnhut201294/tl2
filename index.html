@@ -329,7 +329,7 @@
     </div>
     <div id="resetConfirmModal" class="modal">
         <div class="modal-content">
-            <p>Bạn có chắc chắn muốn chơi lại? Dữ liệu hiện tại sẽ bị xóa!</p>
+            <p>Bạn có chắc chắn muốn bắt đầu trận mới? Dữ liệu trận hiện tại sẽ được lưu vào lịch sử!</p>
             <button onclick="resetGame()">Xác Nhận</button>
             <button onclick="closeResetConfirm()">Hủy</button>
         </div>
@@ -388,7 +388,7 @@
             localStorage.setItem('gameData', JSON.stringify(data));
         }
 
-        // Reset game to initial state
+        // Reset game to start a new match
         function resetGame() {
             // Save current match result to matchHistory if at least one round was played
             if (history.length > 0) {
@@ -402,14 +402,13 @@
                     matchHistory.shift();
                 }
             }
-            // Reset current game
-            players = ['', '', '', ''];
+            // Reset current match
             totals = [0, 0, 0, 0];
             history = [];
             for (let i = 0; i < 4; i++) {
-                document.getElementById(`player${i + 1}`).value = '';
-                document.getElementById(`name${i + 1}`).textContent = `Người chơi ${i + 1}`;
-                document.getElementById(`score${i + 1}`).placeholder = `Điểm người chơi ${i + 1}`;
+                // Keep player names for the new match (can be changed by user)
+                document.getElementById(`name${i + 1}`).textContent = players[i] || `Người chơi ${i + 1}`;
+                document.getElementById(`score${i + 1}`).placeholder = `Điểm ${players[i] || `người chơi ${i + 1}`}`;
                 const totalEl = document.getElementById(`total${i + 1}`);
                 totalEl.textContent = '0';
                 totalEl.className = 'total-score';
