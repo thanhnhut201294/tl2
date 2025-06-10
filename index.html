@@ -114,12 +114,12 @@
         }
         input[type="text"], input[type="number"] {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             margin: 5px 0;
             border: 1px solid #555;
             border-radius: 4px;
             box-sizing: border-box;
-            font-size: 1.2em;
+            font-size: 1.1em;
             text-align: center;
             background-color: #2a2a2a;
             color: #ddd;
@@ -128,12 +128,6 @@
             background: white;
             border-color: #ccc;
             color: #333;
-        }
-        .score-inputs {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(140px, 1fr));
-            gap: 8px;
-            margin-bottom: 15px;
         }
         .button-group {
             display: flex;
@@ -209,7 +203,7 @@
             margin-right: 5px;
         }
         @media (max-width: 600px) {
-            .player-inputs, .score-inputs {
+            .player-inputs {
                 grid-template-columns: repeat(2, minmax(120px, 1fr));
                 gap: 6px;
             }
@@ -217,11 +211,7 @@
                 font-size: 1.2em;
             }
             .header-buttons {
-                flex-wrap: wrap;
-                gap: 6px;
-            }
-            .toggle-mode, .history-btn, .reset-btn {
-                padding: 4px 6px;
+                padding: 4px;
                 font-size: 0.7em;
             }
             .avatar {
@@ -237,8 +227,8 @@
                 padding: 6px;
             }
             input[type="text"], input[type="number"] {
-                font-size: 1.1em;
-                padding: 10px;
+                font-size: 1em;
+                padding: 8px;
             }
             button {
                 padding: 6px;
@@ -268,6 +258,7 @@
                     <div id="total1" class="total-score">0</div>
                 </div>
                 <input type="text" id="player1" placeholder="Tên người chơi 1" onchange="updateName(1)">
+                <input type="number" id="score1" placeholder="Điểm người chơi 1">
             </div>
             <div class="player-card">
                 <div class="avatar-score">
@@ -275,6 +266,7 @@
                     <div id="total2" class="total-score">0</div>
                 </div>
                 <input type="text" id="player2" placeholder="Tên người chơi 2" onchange="updateName(2)">
+                <input type="number" id="score2" placeholder="Điểm người chơi 2">
             </div>
             <div class="player-card">
                 <div class="avatar-score">
@@ -282,6 +274,7 @@
                     <div id="total3" class="total-score">0</div>
                 </div>
                 <input type="text" id="player3" placeholder="Tên người chơi 3" onchange="updateName(3)">
+                <input type="number" id="score3" placeholder="Điểm người chơi 3">
             </div>
             <div class="player-card">
                 <div class="avatar-score">
@@ -289,19 +282,6 @@
                     <div id="total4" class="total-score">0</div>
                 </div>
                 <input type="text" id="player4" placeholder="Tên người chơi 4" onchange="updateName(4)">
-            </div>
-        </div>
-        <div class="score-inputs">
-            <div>
-                <input type="number" id="score1" placeholder="Điểm người chơi 1">
-            </div>
-            <div>
-                <input type="number" id="score2" placeholder="Điểm người chơi 2">
-            </div>
-            <div>
-                <input type="number" id="score3" placeholder="Điểm người chơi 3">
-            </div>
-            <div>
                 <input type="number" id="score4" placeholder="Điểm người chơi 4">
             </div>
         </div>
@@ -406,7 +386,7 @@
             totals = [0, 0, 0, 0];
             history = [];
             for (let i = 0; i < 4; i++) {
-                // Keep player names for the new match (can be changed by user)
+                // Keep player names for the new match
                 document.getElementById(`name${i + 1}`).textContent = players[i] || `Người chơi ${i + 1}`;
                 document.getElementById(`score${i + 1}`).placeholder = `Điểm ${players[i] || `người chơi ${i + 1}`}`;
                 const totalEl = document.getElementById(`total${i + 1}`);
